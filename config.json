@@ -1,0 +1,9 @@
+{
+  "inputDir":false,
+  "covert":"false",
+  "dash":true,
+  "upload":true,
+  "uploadDetails":{
+    "bucket":"samrad-alys"
+  }
+}
