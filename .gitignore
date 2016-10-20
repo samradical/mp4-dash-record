@@ -44,3 +44,4 @@ build/*
 *.json
 *.mpd
 !config.json
+_out
