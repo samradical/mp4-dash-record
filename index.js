@@ -48,7 +48,7 @@ class Mp4Record {
     this._saveDir = dir
   }
 
-  get saveDirectory(dir) {
+  get saveDirectory() {
     return this._saveDir || __dirname
   }
 
