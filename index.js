@@ -1,8 +1,7 @@
-var toBuffer = require('typedarray-to-buffer')
 var ffmpeg = require('fluent-ffmpeg');
+const exec = require('child_process').exec
 var stream = require('stream');
 var path = require('path');
-var rimraf = require('rimraf');
 var fs = require('fs');
 var _ = require('lodash');
 var Q = require('bluebird');
@@ -42,6 +41,15 @@ class Mp4Record {
   constructor() {
     this._videoBuffers = []
     this._audioBuffers = []
+    this._frameCounter = 0
+  }
+
+  set saveDirectory(dir) {
+    this._saveDir = dir
+  }
+
+  get saveDirectory(dir) {
+    return this._saveDir || __dirname
   }
 
   addAudio(buffer) {
@@ -50,6 +58,16 @@ class Mp4Record {
 
   addFrame(buffer) {
     this._videoBuffers.push(buffer)
+  }
+
+  saveImage(base64Str, options) {
+    let {
+      saveDir
+    } = options
+    this._frameCounter++
+    let _name = pad(this._frameCounter, 12)
+    var p = this._getImageSavePath(saveDir, _name)
+    return this._writeFile(p, base64Str)
   }
 
   save(options) {
@@ -161,11 +179,22 @@ class Mp4Record {
       })
   }
 
+  _getImageSavePath(dir, name, uuid) {
+    let _n = uuid ? `${name}${uuid}` : name
+    var p = path.join(dir, `${_n}.png`)
+  }
+
+  _writeFile(p, base64Str) {
+    return fsWriteFile(p, _decodeBase64Image(base64Str))
+  }
+
   _writeFiles(dir, uuid, frames) {
     return Q.map(frames, (frame, i) => {
-        let _name = pad(i, 12)
-        var p = path.join(dir, `${_name}${uuid}.png`)
-        return fsWriteFile(p, _decodeBase64Image(frame))
+        //we might add frames before
+        let _index = this._frameCounter + i
+        let _name = pad(_index, 12)
+        var p = this._getImageSavePath(dir, _name, uuid)
+        return this._writeFile(p, frame)
       }, { concurrency: 1 })
       .then(() => {
         frames.length = 0
