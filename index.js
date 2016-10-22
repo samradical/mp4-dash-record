@@ -181,7 +181,7 @@ class Mp4Record {
 
   _getImageSavePath(dir, name, uuid) {
     let _n = uuid ? `${name}${uuid}` : name
-    var p = path.join(dir, `${_n}.png`)
+    return path.join(dir, `${_n}.png`)
   }
 
   _writeFile(p, base64Str) {
