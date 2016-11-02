@@ -38,10 +38,13 @@ const _decodeBase64Image = (dataString) => {
 }
 
 class Mp4Record {
-  constructor() {
+  constructor(options = {}) {
     this._videoBuffers = []
     this._audioBuffers = []
     this._frameCounter = 0
+    if (options.ffmpegPath) {
+      //ffmpeg.setFfmpegPath(options.ffmpegPath)
+    }
   }
 
   set saveDirectory(dir) {
@@ -65,7 +68,7 @@ class Mp4Record {
       saveDir
     } = options
     this._frameCounter++
-    let _name = pad(this._frameCounter, 12)
+      let _name = pad(this._frameCounter, 12)
     var p = this._getImageSavePath(saveDir, _name)
     return this._writeFile(p, base64Str)
   }
@@ -84,13 +87,14 @@ class Mp4Record {
       let _audioStream = new stream.Readable()
       let _videoStream
       while (this._audioBuffers.length) {
-        _audioStream.push(this._audioBuffers.shift())
+        _audioStream.push(this._audioBuffers.shift(),'binary')
       }
       _audioStream.push(null)
 
       if (withBuffers) {
+        _videoStream = new stream.Readable()
         while (this._videoBuffers.length) {
-          _videoStream.push(this._videoBuffers.shift())
+          _videoStream.push(this._videoBuffers.shift(), 'binary')
         }
         _videoStream.push(null)
       }
@@ -118,10 +122,11 @@ class Mp4Record {
           no(err)
         })
         .on('end', () => {
+          console.log("Finished audio encode");
           this._audioBuffers.length = 0
 
           if (withBuffers) {
-            this._encodeVideoWithBuffers(this._videoStream, (videoPath) => {
+            this._encodeVideoWithBuffers(_videoStream, options, _v, (videoPath) => {
               this._videoBuffers.length = 0
               this._mergeAudioVideo(_p, _a, _v)
                 .then(() => {
@@ -147,7 +152,12 @@ class Mp4Record {
     })
   }
 
-  _encodeVideoWithBuffers(stream, cb) {
+  _encodeVideoWithBuffers(stream, options, outputPath, cb) {
+    let {
+      width,
+      height
+    } = options
+
     ffmpeg(stream)
       .inputFormat('rawvideo')
       .inputOptions([
@@ -163,7 +173,7 @@ class Mp4Record {
         '-framerate 30',
         '-an'
       ])
-      .output(_v)
+      .output(outputPath)
       .on('start', (commandLine) => {
         console.log('Spawned Ffmpeg with command: ' + commandLine);
       })
@@ -175,8 +185,9 @@ class Mp4Record {
         no(err)
       })
       .on('end', () => {
-        cb(_v)
+        cb(outputPath)
       })
+      .run()
   }
 
   _getImageSavePath(dir, name, uuid) {
