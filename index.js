@@ -45,7 +45,9 @@ class Mp4Record {
     this._audioBuffers = []
     this._frameCounter = 0
     if (options.ffmpegPath) {
-      //ffmpeg.setFfmpegPath(options.ffmpegPath)
+      if(fs.existsSync(options.ffmpegPath)){
+        ffmpeg.setFfmpegPath(options.ffmpegPath)
+      }
     }
   }
 
@@ -99,14 +101,12 @@ class Mp4Record {
     saveDir = saveDir || this.saveDirectory
     console.log(options);
     console.log(saveDir);
-    console.log(this._audioBuffers);
     return new Q((yes, no) => {
       let _uuid = UUID.v4()
       let _audioStream = new stream.Readable()
       let _videoStream
       while (this._audioBuffers.length) {
         let c = this._audioBuffers.shift()
-        console.log(typeof c);
         if (typeof c === 'object') {
           c = toBuffer(c)
         }
@@ -177,7 +177,7 @@ class Mp4Record {
     return this._encodeVideoWithBuffers(videoStream, options, videoPath)
       .then(videoPath => {
         this._videoBuffers.length = 0
-        return this._mergeAudioVideo(finalPath, audioPath, videoPath)
+        return this._mergeAudioVideo(finalPath, audioPath, videoPath, options)
           .then(() => {
             console.log(`Success ${finalPath}`);
             yes(finalPath)
@@ -285,7 +285,6 @@ class Mp4Record {
       ffmpeg(audioPath)
         .input(videoPath)
         .outputOptions([
-          '-shortest',
           '-c:v copy',
           '-c:a copy',
         ])

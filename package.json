@@ -1,13 +1,13 @@
 {
-  "name": "@samelie/mp4-dash-record",
+  "name": "mp4-dash-record",
   "description": "",
-  "homepage": "https://github.com/samelie/mp4-dash-record",
+  "homepage": "https://github.com/samradical/mp4-dash-record",
   "author": "Sam Elie <sam@add.dog>",
   "version": "0.1.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/samelie/mp4-dash-record.git",
-    "web": "https://github.com/samelie/mp4-dash-record/"
+    "url": "https://github.com/samradical/mp4-dash-record.git",
+    "web": "https://github.com/samradical/mp4-dash-record/"
   },
   "main": "index.js",
   "scripts": {},
@@ -23,7 +23,7 @@
   },
   "keywords": [],
   "bugs": {
-    "url": "https://github.com/samelie/mp4-dash-record/issues"
+    "url": "https://github.com/samradical/mp4-dash-record/issues"
   },
   "licenses": [
     {
